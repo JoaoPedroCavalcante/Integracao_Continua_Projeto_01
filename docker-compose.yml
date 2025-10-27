@@ -1,19 +1,25 @@
+version: '3.8'
 services:
   postgres:
-    image: "postgres"
+    image: "postgres:15"
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
       - POSTGRES_DB=root
+    # use a named volume mounted at /var/lib/postgresql so the image can
+    # manage version-specific subdirs (avoids the pg_upgrade / data-format error)
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d root"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   app:
     image: golang:1.22
-    command:
-      - go
-      - run
-      - main.go
+    command: ["go","run","main.go"]
     volumes:
       - ./:/app
     working_dir: /app
@@ -21,3 +27,13 @@ services:
       - 8080:8080
     depends_on:
       - postgres
+    environment:
+      - DB_HOST=postgres
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_NAME=root
+      - DB_PORT=5432
+
+volumes:
+  postgres-data:
+    name: integracao_continua_postgres_data
