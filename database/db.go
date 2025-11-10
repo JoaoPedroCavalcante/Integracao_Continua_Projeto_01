@@ -17,6 +17,11 @@ var (
 	err error
 )
 
+const (
+	maxAttempts     = 10
+	retryInterval   = 3 * time.Second
+)
+
 func ConectaComBancoDeDados() {
 	host := os.Getenv("DB_HOST")
 	user := os.Getenv("DB_USER")
@@ -35,7 +40,7 @@ func ConectaComBancoDeDados() {
 		if attempt == maxAttempts {
 			log.Panic("Erro ao conectar com banco de dados")
 		}
-		time.Sleep(3 * time.Second)
+	time.Sleep(retryInterval)
 	}
 
 	if DB == nil {
