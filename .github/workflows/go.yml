@@ -37,7 +37,7 @@ jobs:
           DB_PORT: ${{ secrets.DB_PORT }}
         run: |
         
-        build 
+        go build -o main
       - name: Projeto compilado
         uses: actions/upload-artifact@v4
         with:
