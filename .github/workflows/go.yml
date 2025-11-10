@@ -1,7 +1,7 @@
 # This workflow will build a golang project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
 
-name: Integracao Continua 
+name: Integracao Continua
 
 on:
   push:
@@ -10,25 +10,32 @@ on:
     branches: [ "master" ]
 
 jobs:
-
   ci:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.20'
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
 
-    - name: Inicia Banco De Dados
-      run: docker compose up -d   postgres
-      
-    - name: Lint
+      - name: Inicia Banco De Dados
+        run: docker compose up -d postgres
+
+      - name: Lint
         uses: golangci/golangci-lint-action@v8
         with:
-          version: v2.1
+          version: v1.59.0
           args: controllers/ database/ models/ routes/
 
-    - name: Test
-      run: DB_HOST=${{ secrets.DB_HOST }} DB_USER=${{ secrets.DB_USER }} DB_PASSWORD=${{ secrets.DB_PASSWORD }} DB_NAME=${{ secrets.DB_NAME }} DB_PORT=${{ secrets.DB_PORT }} go test -v main_test.go
+      - name: Test
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+        run: |
+          # run tests for the module
+          go test ./...
